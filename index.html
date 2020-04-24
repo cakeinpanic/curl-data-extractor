@@ -34,27 +34,47 @@
   <div class="btns">
     <button id="btn" class="btn btn-primary">Get cURL</button>
     <button id="btn-copy" class="btn btn-secondary">Copy</button>
+    <button id="btn-copy-request" class="btn btn-secondary">Copy request url</button>
   </div>
-  <samp id="samp"></samp>
+  <samp id="request-url"></samp>
+  <samp id="paramsSamp"></samp>
 </div>
 <script>
   const ta = document.getElementById('text')
   const btn = document.getElementById('btn')
   const btnCopy = document.getElementById('btn-copy')
-  const samp = document.getElementById('samp')
+  const btnCopyRequest = document.getElementById('btn-copy-request')
+  const paramsSamp = document.getElementById('paramsSamp')
+  const requestUrlSamp = document.getElementById('request-url')
 
   btnCopy.style.display = 'none'
+  btnCopyRequest.style.display = 'none'
   btn.addEventListener('click', convertcURL)
-  btnCopy.addEventListener('click', copy)
+  btnCopy.addEventListener('click', () => copy(paramsSamp.innerHTML))
+  btnCopyRequest.addEventListener('click', () => copy(requestUrlSamp.innerHTML))
 
   function convertcURL () {
     const request = ta.value
-    const params = decode(request)
+    const params = decodeParams(request)
+    const url = decodeUrl(request)
+
     btnCopy.style.display = 'inline-block'
-    samp.innerHTML = params
+    btnCopyRequest.style.display = 'inline-block'
+    paramsSamp.innerHTML = params
+    if (url) {
+      requestUrlSamp.innerHTML = `URL: ${url}\n\n`
+    }
   }
 
-  function decode (str) {
+  function decodeUrl (str) {
+    try {
+      const url = /curl '(.+)'/.exec(str)[1]
+      return url
+    } catch (e) {
+      return ''
+    }
+  }
+  function decodeParams (str) {
     try {
       const requestData = str.split('--data-binary')[1].split('--compressed')[0]
       const firstQuoteIndex = requestData.indexOf('\'')
@@ -71,8 +91,7 @@
     }
   }
 
-  function copy () {
-    const str = samp.innerHTML
+  function copy (str) {
     const el = document.createElement('textarea')
     el.value = str
     document.body.appendChild(el)
